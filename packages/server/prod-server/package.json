@@ -44,6 +44,15 @@
         "require": "./dist/cjs/netlify.js"
       },
       "default": "./dist/cjs/netlify.js"
+    },
+    "./edgeone": {
+      "types": "./dist/types/edgeone.d.ts",
+      "jsnext:source": "./src/edgeone.ts",
+      "node": {
+        "import": "./dist/esm-node/edgeone.mjs",
+        "require": "./dist/cjs/edgeone.js"
+      },
+      "default": "./dist/cjs/edgeone.js"
     }
   },
   "typesVersions": {
@@ -53,6 +62,9 @@
       ],
       "netlify": [
         "./dist/types/netlify.d.ts"
+      ],
+      "edgeone": [
+        "./dist/types/edgeone.d.ts"
       ]
     }
   },
@@ -96,6 +108,14 @@
           "require": "./dist/cjs/netlify.js"
         },
         "default": "./dist/cjs/netlify.js"
+      },
+      "./edgeone": {
+        "types": "./dist/types/edgeone.d.ts",
+        "node": {
+          "import": "./dist/esm-node/edgeone.mjs",
+          "require": "./dist/cjs/edgeone.js"
+        },
+        "default": "./dist/cjs/edgeone.js"
       }
     }
   }

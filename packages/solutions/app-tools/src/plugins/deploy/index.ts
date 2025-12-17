@@ -5,6 +5,7 @@ import type {
   CliPlugin,
 } from '../../types';
 import type { AppToolsContext } from '../../types/plugin';
+import { createEdgeOnePreset } from './platforms/edgeone';
 import { createGhPagesPreset } from './platforms/gh-pages';
 import { createNetlifyPreset } from './platforms/netlify';
 import { createNodePreset } from './platforms/node';
@@ -15,6 +16,7 @@ type DeployPresetCreators = {
   vercel: typeof createVercelPreset;
   netlify: typeof createNetlifyPreset;
   ghPages: typeof createGhPagesPreset;
+  edgeone: typeof createEdgeOnePreset;
 };
 
 type DeployTarget = keyof DeployPresetCreators;
@@ -24,6 +26,7 @@ const deployPresets: DeployPresetCreators = {
   vercel: createVercelPreset,
   netlify: createNetlifyPreset,
   ghPages: createGhPagesPreset,
+  edgeone: createEdgeOnePreset,
 };
 
 async function getDeployPreset(
@@ -43,7 +46,7 @@ async function getDeployPreset(
 
   if (!createPreset) {
     throw new Error(
-      `Unknown deploy target: '${deployTarget}'. MODERNJS_DEPLOY should be 'node', 'vercel', or 'netlify'.`,
+      `Unknown deploy target: '${deployTarget}'. MODERNJS_DEPLOY should be 'node', 'vercel', 'netlify' or 'edgeone'.`,
     );
   }
 
