@@ -1,6 +1,6 @@
 const fs = require('node:fs/promises');
 const path = require('node:path');
-const { createEdgeOneFunction } = require('@modern-js/prod-server/edgeone');
+const { createEdgeOneFunction } = require('./bundles/modern-server');
 
 p_genPluginImportsCode;
 
@@ -68,11 +68,9 @@ async function createHandler() {
 
 createHandler();
 
-module.exports = {
-  onRequest: async context => {
-    if (!requestHandler) {
-      await createHandler();
-    }
-    return requestHandler(context);
-  },
+module.exports = async context => {
+  if (!requestHandler) {
+    await createHandler();
+  }
+  return requestHandler(context);
 };

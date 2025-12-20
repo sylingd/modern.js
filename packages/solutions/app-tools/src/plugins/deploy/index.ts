@@ -5,10 +5,11 @@ import type {
   CliPlugin,
 } from '../../types';
 import type { AppToolsContext } from '../../types/plugin';
-import { createEdgeOnePreset } from './platforms/edgeone';
+import { createEdgeOnePreset, setupEdgeOne } from './platforms/edgeone';
 import { createGhPagesPreset } from './platforms/gh-pages';
 import { createNetlifyPreset } from './platforms/netlify';
 import { createNodePreset } from './platforms/node';
+import type { Setup } from './platforms/platform';
 import { createVercelPreset } from './platforms/vercel';
 import { getProjectUsage } from './utils';
 type DeployPresetCreators = {
@@ -27,6 +28,10 @@ const deployPresets: DeployPresetCreators = {
   netlify: createNetlifyPreset,
   ghPages: createGhPagesPreset,
   edgeone: createEdgeOnePreset,
+};
+
+const setups: Partial<Record<DeployTarget, Setup>> = {
+  edgeone: setupEdgeOne,
 };
 
 async function getDeployPreset(
@@ -57,6 +62,8 @@ export default (): CliPlugin<AppTools> => ({
   name: '@modern-js/plugin-deploy',
   setup: api => {
     const deployTarget = process.env.MODERNJS_DEPLOY || provider || 'node';
+
+    setups[deployTarget as DeployTarget]?.(api);
 
     api.deploy(async () => {
       const appContext = api.getAppContext();

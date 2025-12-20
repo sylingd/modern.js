@@ -14,7 +14,17 @@ import {
   getPluginsCode,
   serverAppContenxtTemplate,
 } from '../utils';
-import type { CreatePreset } from './platform';
+import type { CreatePreset, Setup } from './platform';
+
+export const setupEdgeOne: Setup = api => {
+  api.modifyRsbuildConfig(config => {
+    _.set(config, 'environments.node.source.entry.modern-server', [
+      require.resolve('@modern-js/prod-server/edgeone'),
+    ]);
+    // console.log(config);
+    return config;
+  });
+};
 
 export const createEdgeOnePreset: CreatePreset = (
   appContext,
@@ -28,9 +38,9 @@ export const createEdgeOnePreset: CreatePreset = (
     plugin.options,
   ]);
 
-  const outputDirectory = path.join(appDirectory, '.edgeone');
+  const outputDirectory = path.join(appDirectory, '.eo-output');
   const funcsDirectory = path.join(outputDirectory, 'node-functions');
-  const entryFilePath = path.join(funcsDirectory, '[[default]].js');
+  const handlerFilePath = path.join(funcsDirectory, 'handler.js');
   return {
     async prepare() {
       await fse.remove(outputDirectory);
@@ -106,7 +116,7 @@ export const createEdgeOnePreset: CreatePreset = (
       const serverAppContext = serverAppContenxtTemplate(appContext);
 
       let handlerCode = (
-        await fse.readFile(path.join(__dirname, './edgeone-entry.cjs'))
+        await fse.readFile(path.join(__dirname, './edgeone-handler.cjs'))
       ).toString();
 
       handlerCode = handlerCode
@@ -117,37 +127,20 @@ export const createEdgeOnePreset: CreatePreset = (
         .replace('p_serverDirectory', serverConfigPath)
         .replace('p_sharedDirectory', serverAppContext.sharedDirectory)
         .replace('p_apiDirectory', serverAppContext.apiDirectory)
+        .replace(
+          'p_bffRuntimeFramework',
+          `"${serverAppContext.bffRuntimeFramework}"`,
+        )
         .replace('p_lambdaDirectory', serverAppContext.lambdaDirectory);
 
-      await fse.writeFile(entryFilePath, handlerCode);
-    },
-    async end() {
-      if (!needModernServer) {
-        return;
-      }
-      await handleDependencies({
-        appDir: appDirectory,
-        sourceDir: funcsDirectory,
-        includeEntries: [
-          require.resolve('@modern-js/prod-server'),
-          require.resolve('@modern-js/prod-server/edgeone'),
-        ],
-        copyWholePackage(pkgName) {
-          return pkgName === '@modern-js/utils';
-        },
-        transformPackageJson: ({ pkgJSON }) => {
-          if (!pkgJSON.exports || typeof pkgJSON.exports !== 'object') {
-            return pkgJSON;
-          }
+      await fse.writeFile(handlerFilePath, handlerCode);
 
-          return {
-            ...pkgJSON,
-            exports: removeModuleSyncFromExports(
-              pkgJSON.exports as Record<string, any>,
-            ),
-          };
-        },
-      });
+      const entryCode = `module.exports = { onRequest: require('./handler.js') }`;
+      await fse.writeFile(path.join(funcsDirectory, 'index.js'), entryCode);
+      await fse.writeFile(
+        path.join(funcsDirectory, '[[default]].js'),
+        entryCode,
+      );
     },
   };
 };
