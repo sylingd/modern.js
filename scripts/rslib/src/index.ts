@@ -50,7 +50,7 @@ export const rslibConfig: RslibConfig = {
        */
       redirect: {
         js: {
-          extension: true,
+          extension: false,
           path: false,
         },
       },
